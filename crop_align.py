@@ -114,7 +114,7 @@ def detect(net, img_path, img_name, device, save_dir='', first=False):
         os.makedirs(save_dir, exist_ok=True)
 
         ## *.gif format is not supported by cv.imread(..)
-        if os.path.splitext(img_path) == ".gif":
+        if os.path.splitext(img_path)[1].lower() == ".gif":
             cap = cv2.VideoCapture(img_path)
             ret, img_raw_original = cap.read()
             cap.release()
@@ -123,6 +123,14 @@ def detect(net, img_path, img_name, device, save_dir='', first=False):
     else:  # in case we use an image directly
         img_raw_original = img_path
 
+    # Handle sentinel from failed first pass and bad reads
+    if isinstance(img_path, tuple) and img_path == (None, []):
+        print(f"Error averted at {img_name}, skipping.")
+        return None, []
+    if img_raw_original is None:
+        print(f"Could not read image for {img_name}, skipping.")
+        return None, []
+    
     def resize_square_aspect_cv2(img, desired_size=640):
         old_size = img.shape[0:2]  # (width, height)
 
@@ -142,7 +150,7 @@ def detect(net, img_path, img_name, device, save_dir='', first=False):
 
         return new_img
 
-    if img_path == (None, []):
+    if isinstance(img_path, tuple) and img_path == (None, []):
         print(f"Error averted at {img_name}, skipping.")
         return None, []
 

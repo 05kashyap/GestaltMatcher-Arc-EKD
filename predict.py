@@ -41,11 +41,12 @@ def preprocess(img, img_size=112, gray=False, flip=False):
 
     if gray:
         # desired number of channels is 1, so we convert to gray
-        img = A.to_gray(img)
+        #img = A.to_gray(img) commented due to albumentations change
+        img = A.ToGray()(image=img)['image']
     # else: color
 
     if flip:
-        img = A.hflip(img)
+        img = A.HorizontalFlip()(image=img)['image']
     # else: normal
 
     img = np.transpose(img, (2, 0, 1))
@@ -252,7 +253,8 @@ def main():
         if ".onnx" in weights:
             model = convert(weights).to(device)
         elif ".pth" in weights:
-            model = torch.load(weights, map_location=device).to(device)
+            # PyTorch 2.6+: default weights_only=True breaks loading full model pickles
+            model = torch.load(weights, map_location=device, weights_only=False).to(device)
         print(f"Loaded model: {weights}")
         return model
 

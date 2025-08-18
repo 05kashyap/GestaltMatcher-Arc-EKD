@@ -116,7 +116,8 @@ def main():
         if ".onnx" in weights:
             model = convert(weights).to(device)
         elif ".pth" in weights:
-            model = torch.load(weights, map_location=device).to(device)
+            # PyTorch 2.6+: default weights_only=True breaks loading full model pickles
+            model = torch.load(weights, map_location=device, weights_only=False).to(device)
         print(f"Loaded model: {weights}")
         return model
 
